@@ -12,6 +12,7 @@ provider "aws" {
 resource "aws_instance" "js-example" {
 	ami			= "ami-0c55b159cbfafe1f0"
 	instance_type		= "t2.micro"
+  # use reference of security group id to tell instance which SG to use
   vpc_security_group_ids = [aws_security_group.js-sg.id] 
 
   # create an index.html file when the server starts up. nohup is a builtin Ubuntu http service  

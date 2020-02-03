@@ -1,0 +1,20 @@
+digraph {
+	compound = "true"
+	newrank = "true"
+	subgraph "root" {
+		"[root] aws_instance.example (orphan)" [label = "aws_instance.example", shape = "box"]
+		"[root] aws_instance.js-example" [label = "aws_instance.js-example", shape = "box"]
+		"[root] aws_security_group.js-sg" [label = "aws_security_group.js-sg", shape = "box"]
+		"[root] provider.aws" [label = "provider.aws", shape = "diamond"]
+		"[root] aws_instance.example (orphan)" -> "[root] provider.aws"
+		"[root] aws_instance.js-example" -> "[root] aws_security_group.js-sg"
+		"[root] aws_security_group.js-sg" -> "[root] provider.aws"
+		"[root] meta.count-boundary (EachMode fixup)" -> "[root] aws_instance.example (orphan)"
+		"[root] meta.count-boundary (EachMode fixup)" -> "[root] aws_instance.js-example"
+		"[root] provider.aws (close)" -> "[root] aws_instance.example (orphan)"
+		"[root] provider.aws (close)" -> "[root] aws_instance.js-example"
+		"[root] root" -> "[root] meta.count-boundary (EachMode fixup)"
+		"[root] root" -> "[root] provider.aws (close)"
+	}
+}
+

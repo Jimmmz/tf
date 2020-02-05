@@ -5,7 +5,7 @@
 # use keep = "" to indicate not for deletion (not inserting keep = "" means it will be deleted)
 
 provider "aws" {
-  region = "us-east-2"
+  region = "eu-west-2"
 }
 
 # define aws deafult VPC
@@ -19,25 +19,25 @@ data "aws_subnet_ids" "default" {
 }
 
 # create an instance using an AMI
-resource "aws_instance" "js-example" {
-	ami			= "ami-0c55b159cbfafe1f0"
-	instance_type		= "t2.micro"
-  # use reference of security group id to tell instance which SG to use
-  vpc_security_group_ids = [aws_security_group.js-sg.id] 
+# resource "aws_instance" "js-instance" {
+# 	ami			= "ami-07dc734dc14746eab"
+# 	instance_type		= "t2.micro"
+#   # use reference of security group id to tell instance which SG to use
+#   vpc_security_group_ids = [aws_security_group.js-sg.id] 
 
-  # create an index.html file when the server starts up. nohup is a builtin Ubuntu http service  
-  user_data = <<-EOF
-          #!/bin/bash
-          echo "Hello James" > index.html
-          nohup busybox httpd -f -p ${var.server_port} &
-          EOF
+#   # create an index.html file when the server starts up. nohup is a builtin Ubuntu http service  
+#   user_data = <<-EOF
+#           #!/bin/bash
+#           echo "Hello James" > index.html
+#           nohup busybox httpd -f -p ${var.server_port} &
+#           EOF
 
-#  always set owner for any Hashi instance
-  tags = {
-    Owner = "jstewart@hashicorp.com"
-    Name = "JStewart"
-  } 
-}
+# #  always set owner for any Hashi instance
+#   tags = {
+#     Owner = "jstewart@hashicorp.com"
+#     Name = "JStewart"
+#   } 
+# }
   
 # create a security group. AWS by default does not allow traffic on or out of an instance
 resource "aws_security_group" "js-sg" {
@@ -76,19 +76,20 @@ variable "server_port" {
 }
 
 # set an ouptput variable to get the public IP adress of the server
-output "Public_IP" {
-  value = aws_instance.js-example.public_ip
-  description = "The public IP address of the server"
-}
+# output "Public_IP" {
+#   value = aws_instance.js-instance.public_ip
+#   description = "The public IP address of the server"
+# }
 
-resource "aws_launch_configuration" "js_lc" {
-  image_id = "ami-0c55b159cbfafe1f0"
+resource "aws_launch_configuration" "js-lc" {
+  name_prefix = "jstewart-"
+  image_id = "ami-07dc734dc14746eab"
   instance_type = "t2.micro"
   security_groups = [aws_security_group.js-sg.id]
 
   user_data = <<-EOF
           #!/bin/bash
-          echo "Hello James" > index.html
+          echo "Hello Sir James" > index.html
           nohup busybox httpd -f -p ${var.server_port} &
           EOF
 
@@ -99,8 +100,9 @@ resource "aws_launch_configuration" "js_lc" {
   }
 }
 
-resource "aws_autoscaling_group" "js_asg" {
-  launch_configuration = "aws_launch_configuration.js_lc.name"
+resource "aws_autoscaling_group" "js-asg" {
+  name_prefix = "JStewart-"
+  launch_configuration = aws_launch_configuration.js-lc.name
 # Define subnet ID's - page 64  
   vpc_zone_identifier = data.aws_subnet_ids.default.ids
 
@@ -109,9 +111,16 @@ resource "aws_autoscaling_group" "js_asg" {
 
   tag {
     key = "Name"
-    value = "terraform-asg-example-JS"
+    value = "JStewart-ASG"
+    propagate_at_launch = true
+  }
+  
+  tag {
+    key = "Owner"
+    value = "jstewart@hashicorp.com"
     propagate_at_launch = true
   }
 }
+
 
 
